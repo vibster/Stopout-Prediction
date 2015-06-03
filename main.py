@@ -11,7 +11,7 @@ import record_experiments as record
 
 def main(dbName=None, userName=None, passwd=None, dbHost=None,
         dbPort=None,training_course=None, testing_course=None,
-        earliest_date=None,latest_date=None,features_to_skip=None,
+        earliest_date=None,latest_date_object=None,features_to_skip=None,
         pred_week=None,feat_week=None, num_weeks=None,epsilon=None,lamb=None):
     if not dbHost:
         dbHost = 'alfa6.csail.mit.edu'
@@ -23,13 +23,13 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
         passwd = getpass.getpass()
     if not dbName:
         dbName = '3091x_2013_spring'
-    if not latest_date:
-        latestDateObject = datetime.datetime.now()
-        latestDate = latestDateObject.isoformat()
+    if not latest_date_object:
+        latest_date_object = datetime.datetime.now()
+        latest_date = latest_date_object.isoformat()
     if not earliest_date:
         #in seconds:
         dateSlack = 14400 # 2 hours between currentDate and when feature extraction started
-        earliest_date = (latestDateObject - datetime.timedelta(seconds=dateSlack)).isoformat()
+        earliest_date = (latest_date_object - datetime.timedelta(seconds=dateSlack)).isoformat()
     if not training_course:
         training_course=dbName
     if not testing_course:
@@ -60,7 +60,7 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
                                                         training_course,
                                                         testing_course,
                                                         earliest_date,
-                                                        latest_date,
+                                                        latest_date_object,
                                                         features,
                                                         weeks,
                                                         pred_week,
@@ -70,16 +70,16 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
     print "done"
 
     #save experiment and model
-    print "Saving run"
-    exp_id = record.record_experiment(dbName, userName, passwd, dbHost, dbPort, pred_week, feat_week,
-            auc_train, testing_course, auc_test, lamb, epsilon, latest_date)
+    #print "Saving run"
+    #exp_id = record.record_experiment(dbName, userName, passwd, dbHost, dbPort, pred_week, feat_week,
+            #auc_train, testing_course, auc_test, lamb, epsilon, latest_date)
 
-    record.record_model(dbName, userName, passwd, dbHost, dbPort, features, weights, exp_id)
-    print "done"
+    #record.record_model(dbName, userName, passwd, dbHost, dbPort, features, weights, exp_id)
+    #print "done"
 
 
 
 
 
 if __name__ == "__main__":
-    main(dbName='201x_2013_spring')
+    main(dbName='201x_2013_spring', latest_date_object=datetime.datetime(2015,6,2,22,0,0))

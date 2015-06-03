@@ -547,6 +547,8 @@ class LogReg_withLearnedPrior:
         u=np.zeros((n_feat+1,1))
         s=self.variance_initial_prior*np.ones((n_feat+1,1))
         self.weight=compute_weight(self.XtrainA,self.YtrainA,u,s,self.coef_transfer,e)
+        print "training task a weights"
+        print sum(self.weight)
         self.weight=np.array([self.weight]).T
 
     def training_flat_taskBtaskA(self,e):

@@ -12,11 +12,13 @@ Ben Schreck
 '''
 
 import csv
+import math
 import argparse
 import numpy as np
 import sql_functions as sql
 import utils
 import sys
+from feature_dict import *
 
 def extract_features_from_sql(conn,
                               course_name,
@@ -102,6 +104,11 @@ def extract_features_from_sql(conn,
     current_student_viable = True
     for row in data:
         student_id, week, feat_id, value = row
+        if value:
+            value = float(value)
+        else:
+            value = featureDict[feat_id]['default']
+
         week = int(week)
         feat_id = int(feat_id)
         if student_id != current_student:

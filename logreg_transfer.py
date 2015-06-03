@@ -10,12 +10,12 @@ from sklearn import metrics
 from sklearn.metrics import accuracy_score
 
 def compute_weight(X,Y,u,s,coef_transfer,e):
-	print "Computing weights"
-	b=generate_b(np.shape(X)[1]+1,e)
-	func=lambda W: logReg_ObjectiveFunction(X,Y,W,u,s,coef_transfer,b)
-	w=np.zeros((np.shape(X)[1]+1,1))
-	sol=minimize(func,w)
-	return sol.x
+    print "Computing weights"
+    b=generate_b(np.shape(X)[1]+1,e)
+    func=lambda W: logReg_ObjectiveFunction(X,Y,W,u,s,coef_transfer,b)
+    w=np.zeros((np.shape(X)[1]+1,1))
+    sol=minimize(func,w)
+    return sol.x
 
 def generate_b(d,e):
     res=np.random.randn(d)
@@ -25,14 +25,12 @@ def generate_b(d,e):
     return np.array([res]).T
 
 def logReg_ObjectiveFunction(X,Y,W,u,s,coef_transfer,b):
-	w=np.array([W[1:]]).T
-	w_0=W[0]
-	A=np.dot(X,w)+float(w_0)
-	#print "A",A
-	B=-np.multiply(Y,A)
-	NLL=sum(np.log(1+np.exp(B)))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
-	#print "NLL",NLL
-	return NLL
+    w=np.array([W[1:]]).T
+    w_0=W[0]
+    A=np.dot(X,w)+float(w_0)
+    B=-np.multiply(Y,A)
+    NLL=sum(np.log(1+np.exp(B)))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
+    return NLL
 
 def GPriorWeightRegTerm(w,u,s):
 	result=0
@@ -47,7 +45,7 @@ def estimatePrior(W):#W contains the list of w's computed for several task (row 
 	s=np.sqrt((1/float(K-1))*np.sum(np.multiply(W_norm,W_norm),axis=0))
 	return u,s  #### WRONG ANSWER ======> TO MODIFY
 
-def separateAndComputeWeight(X,Y,u,s,n_tasks,coef_transfer): 
+def separateAndComputeWeight(X,Y,u,s,n_tasks,coef_transfer):
 	n_sample=np.shape(X)[0]
 	n_sampleTask=int(n_sample/n_tasks)
 	W=np.zeros((n_tasks,1+np.shape(X)[1]))
