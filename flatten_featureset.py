@@ -11,7 +11,7 @@ Ben Schreck
 
 '''
 
-#import csv
+import csv
 import argparse
 import numpy as np
 import sql_functions as sql
@@ -142,12 +142,34 @@ def extract_features_from_sql(conn,
                 #student_features.extend(utils.sql_to_python_add_default_values(week_features))
             #features[student,:] = student_features
 
+
+
+
     end_train=int(threshold*np.shape(features)[0]/len(active_weeks))*len(active_weeks)
 
     if mode == 'Test' or mode == 'FM_test':
         return features[end_train:,:]
     else:
         return features[:end_train,:]
+
+#put this above end_train to export features to csv
+#export_features(features, feature_ids, len(active_weeks))
+def export_features(features, feature_ids, num_weeks):
+    with open('exported_201_features.csv', "wb") as out_csv:#file format is [label list_of_features ]
+        csv_writer = csv.writer(out_csv, delimiter= ',')
+        ###### WRITE HEADER
+        header = ["dropout"]
+        week = 0
+
+        for feature_num in range(1, len(features[0,:])):
+            feature_id = ((feature_num-1) %(len(feature_ids)-1))+1
+            header += ["feature_%s week_%s" % (feature_ids[feature_id], week)]
+            week += 1
+            week %= num_weeks
+
+        csv_writer.writerow(header)
+        for row in features:
+            csv_writer.writerow(row)
 
 #TESTING, TODO: take out
 #from run_scripts.feature_extraction import *

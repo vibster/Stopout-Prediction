@@ -1,5 +1,7 @@
 #utilities
 import feature_dict
+import getpass
+import datetime
 
 #predict
 import predictor as predictor
@@ -80,4 +82,4 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
 
 
 if __name__ == "__main__":
-    main()
+    main(dbName='201x_2013_spring')
