@@ -131,28 +131,19 @@ def extract_features_from_sql(conn,
                 feature_row[0,0] = value
             elif feat_id == 1 and week == elimination_w and value == 0:
                 current_student_viable = False
-            elif week in active_weeks:
-                feature_index = (np.where(feature_ids==feat_id)[0][0])*week
+            elif feat_id != 1 and week in active_weeks:
+                feature_index = (np.where(feature_ids==feat_id)[0][0])+(week*(num_features-1))
+                if feature_index == 21 and feat_id != 210:
+                    print 'here'
+                    print value
+                    print feat_id
                 feature_row[0,feature_index] = value
-        ##first feature = dropout label
-        ##select first feature of this student in last week
-
-        ## Eliminate students whose last accessible label was : 0 (=dropout)
-        #if elimination_data[student*num_features] != 0:
-            #label = predict_week_data[student*num_features]
-            #student_features = [label]
-
-            #for w in active_weeks:
-                #start_index = 1+ (w*student*num_features) # add 1 to not include label (first feature)
-                #end_index = w*(student+1)*num_features
-                #week_features = data[start_index : end_index]
-                #student_features.extend(utils.sql_to_python_add_default_values(week_features))
-            #features[student,:] = student_features
 
 
 
 
     end_train=int(threshold*np.shape(features)[0]/len(active_weeks))*len(active_weeks)
+
 
     if mode == 'Test' or mode == 'FM_test':
         return features[end_train:,:]
@@ -166,13 +157,14 @@ def export_features(features, feature_ids, num_weeks):
         csv_writer = csv.writer(out_csv, delimiter= ',')
         ###### WRITE HEADER
         header = ["dropout"]
-        week = 0
+        week = -1
 
         for feature_num in range(1, len(features[0,:])):
             feature_id = ((feature_num-1) %(len(feature_ids)-1))+1
+            if feature_id == 1:
+                week += 1
+                week %= num_weeks
             header += ["feature_%s week_%s" % (feature_ids[feature_id], week)]
-            week += 1
-            week %= num_weeks
 
         csv_writer.writerow(header)
         for row in features:
