@@ -84,10 +84,6 @@ class Course:
                                                                   mode='Train')
         self.X_train = train_data[:,1:]
         self.Y_train = train_data[:,0]
-        print "SHAPE OF X TRAIN:"
-        print np.shape(self.X_train)
-        print "SHAPE OF Y TRAIN:"
-        print np.shape(self.Y_train)
         #if os.path.exists(self.train_file):
             #intermediate_file1 = "prediction/datasets_problems/"+self.name+"_week_"+str(lead)+"_lag_"+str(len(lag))+"_train.csv"
             #flatten_featureset.create_features(intermediate_file1, self.train_file, lead, lag)
@@ -137,10 +133,6 @@ class Course:
                                                                   mode='Test')
         self.X_train = test_data[:,1:]
         self.Y_train = test_data[:,0]
-        print "SHAPE OF X TEST:"
-        print np.shape(self.X_train)
-        print "SHAPE OF Y TEST:"
-        print np.shape(self.Y_train)
         #if os.path.exists(self.test_file):
             #intermediate_file1 = "prediction/datasets_problems/"+self.name+"_week_"+str(lead)+"_lag_"+str(len(lag))+"_test.csv"
             #flatten_featureset.create_features(intermediate_file1, self.test_file, lead, lag)
@@ -465,8 +457,8 @@ class LogReg_withLearnedPrior:
         u=np.zeros((n_feat+1,1))
         s=self.variance_initial_prior*np.ones((n_feat+1,1))
         self.weight=compute_weight(self.XtrainA,self.YtrainA,u,s,self.coef_transfer,e)
-        print "training task a weights"
-        print sum(self.weight)
+        if sum(self.weight) == 0:
+            print "training task a weight == 0"
         self.weight=np.array([self.weight]).T
 
     def training_flat_taskBtaskA(self,e):

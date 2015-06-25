@@ -84,5 +84,7 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
 if __name__ == "__main__":
     main(dbName='201x_2013_spring',
         features_to_skip = [3,4,5,14,17,103,104,105, 201,204,205,206,207,301,302],
-            earliest_date='2015-06-22T14:09:50',
-            latest_date_object=datetime.datetime(2015,6,22,14,9,53))
+            earliest_date='2015-06-25T10:35:00',
+            latest_date_object=datetime.datetime(2015,6,25,17,36,00),
+            pred_week = 5,
+            feat_week = 3)

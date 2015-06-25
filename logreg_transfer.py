@@ -4,10 +4,12 @@ Dropout Classification Pipeline
 '''
 
 import csv
+import sys
 import numpy as np
 from scipy.optimize import minimize
 from sklearn import metrics
 from sklearn.metrics import accuracy_score
+import mpmath as mp
 
 def compute_weight(X,Y,u,s,coef_transfer,e):
     print "Computing weights"
@@ -29,7 +31,8 @@ def logReg_ObjectiveFunction(X,Y,W,u,s,coef_transfer,b):
     w_0=W[0]
     A=np.dot(X,w)+float(w_0)
     B=-np.multiply(Y,A)
-    NLL=sum(np.log(1+np.exp(B)))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
+    with mp.workdps(20):
+        NLL=sum(np.log(1+np.exp(B)))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
     return NLL
 
 def GPriorWeightRegTerm(w,u,s):
