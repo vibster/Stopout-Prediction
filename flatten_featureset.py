@@ -133,10 +133,6 @@ def extract_features_from_sql(conn,
                 current_student_viable = False
             elif feat_id != 1 and week in active_weeks:
                 feature_index = (np.where(feature_ids==feat_id)[0][0])+(week*(num_features-1))
-                if feature_index == 21 and feat_id != 210:
-                    print 'here'
-                    print value
-                    print feat_id
                 feature_row[0,feature_index] = value
 
 
