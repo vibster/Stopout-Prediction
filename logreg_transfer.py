@@ -31,9 +31,25 @@ def logReg_ObjectiveFunction(X,Y,W,u,s,coef_transfer,b):
     w_0=W[0]
     A=np.dot(X,w)+float(w_0)
     B=-np.multiply(Y,A)
-    with mp.workdps(20):
-        NLL=sum(np.log(1+np.exp(B)))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
+    with mp.workdps(30):
+        NLL=sum(log_one_plus_exp(B))+coef_transfer*0.5*GPriorWeightRegTerm(W,u,s)#+(1/float(np.shape(Y)[0]))*np.dot(b.T,np.array([W]).T)[0,0]
     return NLL
+
+def log_one_plus_exp(B):
+    #overflow protection
+    #very slow, in future figure out a way to do this better with np matrices
+    n,m = np.shape(B)
+    output = np.zeros((n,m))
+    low_val = np.log(1)
+    for i,x in enumerate(B):
+        if x < -37:
+            output[i] = low_val
+        elif x > 37:
+            output[i] = x
+        else:
+            output[i] = np.log(1+np.exp(x))
+    return output
+
 
 def GPriorWeightRegTerm(w,u,s):
 	result=0
