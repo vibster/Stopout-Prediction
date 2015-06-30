@@ -25,7 +25,7 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
         dbName = '3091x_2013_spring'
     if not latest_date_object:
         latest_date_object = datetime.datetime.now()
-        latest_date = latest_date_object.isoformat()
+    latest_date = latest_date_object.isoformat()
     if not earliest_date:
         #in seconds:
         dateSlack = 14400 # 2 hours between currentDate and when feature extraction started
@@ -70,21 +70,23 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
     print "done"
 
     #save experiment and model
-    #print "Saving run"
-    #exp_id = record.record_experiment(dbName, userName, passwd, dbHost, dbPort, pred_week, feat_week,
-            #auc_train, testing_course, auc_test, lamb, epsilon, latest_date)
+    print "Saving run"
+    exp_id = record.record_experiment(dbName, userName, passwd, dbHost, dbPort, pred_week, feat_week,
+           auc_train, testing_course, auc_test, lamb, epsilon, latest_date)
 
-    #record.record_model(dbName, userName, passwd, dbHost, dbPort, features, weights, exp_id)
-    #print "done"
+    record.record_model(dbName, userName, passwd, dbHost, dbPort, features, weights, exp_id)
+    print "done"
 
 
 
 
 
 if __name__ == "__main__":
-    main(dbName='6002x_spring_2013',
-        features_to_skip = [4,104,105,204,205,206,207,17,302],
-            earliest_date='2015-06-25T16:35:00',
-            latest_date_object=datetime.datetime(2015,6,25,18,36,00),
+    main(dbName='3091x_2012_fall',
+        features_to_skip = [3,4,5,14,17,103,104,105,201,204,205,206,207,301,302], #without collab
+        #features_to_skip = [4,  104,105, 17,201,204,205,206,207,302], #with collab
+            earliest_date='2015-06-30T12:33:00',
+            latest_date_object=datetime.datetime(2015,6,30,12,40,00),
+            num_weeks = 14,
             pred_week = 5,
             feat_week = 3)
