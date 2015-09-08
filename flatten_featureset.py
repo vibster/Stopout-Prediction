@@ -130,8 +130,13 @@ def extract_features_from_sql(conn,
     current_student = data[0][0]
     feature_row = np.zeros((1,row_length))
     current_student_viable = True
+
+
     for row in data:
+
         student_id, week, feat_id, value = row
+
+        ############### Test if feature value is given and defautl if not
         if value:
             value = float(value)
         else:
@@ -139,12 +144,13 @@ def extract_features_from_sql(conn,
 
         week = int(week)
         feat_id = int(feat_id)
+
+        ############## If the student if different from before
         if student_id != current_student:
             if current_student_viable:
-                #add feature_row to features
-                features[student_index,:]=utils.replace_nulls_with_defaults(feature_ids,
-                                                                                feature_row)
+                features[student_index,:]=utils.replace_nulls_with_defaults(feature_ids,feature_row)   ## add features to features
                 pass
+
             #update to new student
             current_student = student_id
             feature_row = np.zeros((1,row_length))
@@ -153,7 +159,7 @@ def extract_features_from_sql(conn,
             if student_index == num_students:
                 break
 
-
+        ############# Set feature_row for viable students and set current_student_viable to False for non viable students
         if current_student_viable:
             if feat_id == 1 and week == p:
                 feature_row[0,0] = value
@@ -165,7 +171,7 @@ def extract_features_from_sql(conn,
 
 
     #put this above end_train to export features to csv
-    #export_features(features, feature_ids, len(active_weeks))
+    export_features(features, course_name,predict_w, range_feat_w, feature_ids, len(active_weeks))
 
     end_train=int(threshold*np.shape(features)[0]/len(active_weeks))*len(active_weeks)
 
@@ -176,21 +182,9 @@ def extract_features_from_sql(conn,
         return features[:end_train,:]
 
 
-def export_features(features, feature_ids, num_weeks):
-    with open('exported_201_features.csv', "wb") as out_csv:#file format is [label list_of_features ]
+def export_features(features, course_name,predict_w, range_feat_w, feature_ids, num_weeks):
+    with open(course_name+'_'+predict_w+'_'+max(range_feat_w)+'.csv', "wb") as out_csv:#file format is [label list_of_features ]
         csv_writer = csv.writer(out_csv, delimiter= ',')
-        ###### WRITE HEADER
-        header = ["dropout"]
-        week = -1
-
-        for feature_num in range(1, len(features[0,:])):
-            feature_id = ((feature_num-1) %(len(feature_ids)-1))+1
-            if feature_id == 1:
-                week += 1
-                week %= num_weeks
-            header += ["feature_%s week_%s" % (feature_ids[feature_id], week)]
-
-        csv_writer.writerow(header)
         for row in features:
             csv_writer.writerow(row)
 
