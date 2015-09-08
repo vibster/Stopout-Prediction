@@ -83,10 +83,10 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
 
 if __name__ == "__main__":
     main(dbName='3091x_2012_fall',
-        features_to_skip = [3,4,5,14,17,103,104,105,201,204,205,206,207,301,302], #without collab
-        #features_to_skip = [4,  104,105, 17,201,204,205,206,207,302], #with collab
-            earliest_date='2015-06-30T12:33:00',
-            latest_date_object=datetime.datetime(2015,6,30,12,40,00),
+        #features_to_skip = [3,4,5,14,17,103,104,105,201,204,205,206,207,301,302], #without collab
+        features_to_skip = [4,  104,105, 17,201,204,205,206,207,302], #with collab
+            earliest_date='2015-07-01T14:03:00',
+            latest_date_object=datetime.datetime(2015,7,01,17,40,00),
             num_weeks = 14,
             pred_week = 5,
             feat_week = 3)

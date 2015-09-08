@@ -19,6 +19,8 @@ import sql_functions as sql
 import utils
 import sys
 from feature_dict import *
+import pickle as pck
+import os.path
 
 def extract_features_from_sql(conn,
                               course_name,
@@ -32,44 +34,67 @@ def extract_features_from_sql(conn,
                               mode, #modes are 'Train',Test','FM_train', 'FM_test'
                               fm_lead = 3):  # only matters for FM and FM_test
 
-    get_features = '''
-    SELECT user_id,
-            longitudinal_feature_week,
-            longitudinal_feature_id,
-            longitudinal_feature_value
-    FROM
-    `%s`.user_longitudinal_feature_values
-    WHERE date_of_extraction >= '%s'
-    AND
-    date_of_extraction <= '%s'
-    AND
-    longitudinal_feature_id in (%s)
-    AND
-    longitudinal_feature_week in (%s)
-    ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
-    ASC
-    ''' % (course_name,
-           earliest_date,
-           latest_date,
-           utils.convert_list_to_str(list(feature_ids)),
-           utils.convert_list_to_str(list(all_weeks)))
+    
+    print "Features to be extracted=%s" %(feature_ids)
+
+    #date_of_extraction >= '%s'
+    # AND
+    # date_of_extraction <= '%s'
+    # AND
+
+
+    ###########################  EXTRACT FEATURES ##########################
+    if os.path.isfile("features"+course_name+".p"):  # Load saved features
+        data=pck.load( open( "features"+course_name+".p", "rb" ) )
+    else: # Query and load Features
+        get_features = '''
+        SELECT user_id,
+                longitudinal_feature_week,
+                longitudinal_feature_id,
+                longitudinal_feature_value
+        FROM
+        `%s`.user_longitudinal_feature_values
+        WHERE 
+        longitudinal_feature_id in (%s)
+        AND
+        longitudinal_feature_week in (%s)
+        ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
+        ASC
+        ''' % (course_name,
+               # earliest_date,
+               # latest_date,
+               utils.convert_list_to_str(list(feature_ids)),
+               utils.convert_list_to_str(list(all_weeks)))
 
 
 
-    cursor = conn.cursor()
-    cursor.execute(get_features)
-    data = np.array(cursor.fetchall())
-    cursor.close()
+        cursor = conn.cursor()
+        cursor.execute(get_features)
+        data = np.array(cursor.fetchall())
+        cursor.close()
 
-    get_num_students = '''
-    select count(*)
-    FROM `%s`.users
-    WHERE user_dropout_week IS NOT NULL
-    ''' % (course_name)
+        # Save features once for all
+        pck.dump(data,open( "features"+course_name+".p", "wb" ) )
 
-    cursor = conn.cursor()
-    cursor.execute(get_num_students)
-    num_students = int(cursor.fetchone()[0])
+
+    ###########################  EXTRACT NUMBER OF STUDENTS ##########################
+    if os.path.isfile("num_students_"+course_name+".p"):
+        num_students=pck.load( open( "num_students_"+course_name+".p", "rb" ) )
+    else:
+        get_num_students = '''
+        select count(*)
+        FROM `%s`.users
+        WHERE user_dropout_week IS NOT NULL
+        ''' % (course_name)
+
+
+        cursor = conn.cursor()
+        cursor.execute(get_num_students)
+        num_students = int(cursor.fetchone()[0])
+        # Save features once for all
+        pck.dump(num_students,open( "num_students_"+course_name+".p", "wb" ) )
+
+
     num_features = len(feature_ids)
 
 
@@ -136,7 +161,8 @@ def extract_features_from_sql(conn,
                 feature_row[0,feature_index] = value
 
 
-
+    #put this above end_train to export features to csv
+    #export_features(features, feature_ids, len(active_weeks))
 
     end_train=int(threshold*np.shape(features)[0]/len(active_weeks))*len(active_weeks)
 
@@ -146,8 +172,7 @@ def extract_features_from_sql(conn,
     else:
         return features[:end_train,:]
 
-#put this above end_train to export features to csv
-#export_features(features, feature_ids, len(active_weeks))
+
 def export_features(features, feature_ids, num_weeks):
     with open('exported_201_features.csv', "wb") as out_csv:#file format is [label list_of_features ]
         csv_writer = csv.writer(out_csv, delimiter= ',')

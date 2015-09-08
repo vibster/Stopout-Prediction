@@ -64,9 +64,9 @@ def run_dropout_prediction(userName,
             testing_course_threshold, conn)
 
     ############## Set parameters #################################################################
-    n_A=500 # Number of samples from source domain (course)
-    n_B_known=0.3 # Percentage of sample used from target domain available
-    n_B_unknown=0.3  # Percentage of sample used from target domain available
+    n_A=2000 # Number of samples from source domain (course)
+    n_B_known=0.6 # Percentage of sample used from target domain available
+    n_B_unknown=0.4  # Percentage of sample used from target domain available
     is_FM=False
     seed=1 # set up the randomization seed
 
