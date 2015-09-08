@@ -14,6 +14,7 @@ Function:
 
 from classes import *
 from experiment_functions import *
+import datetime
 
 import sql_functions as sql
 
@@ -83,13 +84,26 @@ def run_dropout_prediction(userName,
 
     ############### Run sklearn logreg
 
-    auc_test=logreg(a,b,pred_week,range_feat_w)
+    auc_test=logreg(a,b,pred_week,feat_week)
     auc_train=0 #"default"
 
     conn.close()
     return (auc_test,auc_train,1)
 
+res=run_dropout_prediction('sebboyer',
+                           '37d(b08F', 'alfa6.csail.mit.edu', 3306,
+                           '3091x_2012_fall',
+                           '3091x_2012_fall',
+                           '2015-08-01T00:00:00',
+                            datetime.datetime.now(),
+                           [1,2,6,7,8,9,10,11,12,15,16,109,110,111,112,208,209,210,301],
+                           range(14),
+                           4,
+                           [0,1,2],
+                           1,
+                           lamb=1)
 
+print res
 
 ##########################################################################################
 ###############################        Example     ######################################

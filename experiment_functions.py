@@ -5,7 +5,7 @@ import numpy as np
 from classes import *
 from utils import *
 from sklearn import linear_model
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_auc_score
 
 def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,param1,param2,seed,is_FM):
 	t=LogReg_withLearnedPrior()
@@ -30,36 +30,42 @@ def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,p
 def logreg(course_train,course_test,pred_week,range_feat_w):
 
 	#################### Extract features for train course
-	course_train.flattenAndLoad_traindata(lead,lag)
+	print "Extracting features for train course"
+	course_train.flattenAndLoad_traindata(pred_week,range_feat_w)
 	X_train=course_train.X_train
 	Y_train=course_train.Y_train
 
 	#################### Extract features for train course
-	course_train.flattenAndLoad_testdata(lead,lag)
+	print "Extracting features for test course"
+	course_test.flattenAndLoad_testdata(pred_week,range_feat_w)
 	X_test=course_test.X_train
 	Y_test=course_test.Y_train
 
 	#################### Normalize features independently
+	print "Normalizing features"
 	X_train=normalize_features(X_train)
 	X_test=normalize_features(X_test)
 
 	#################### Initialize logreg
-	logreg=LogisticRegression(penalty='l2', C=1.0)
+	logreg=linear_model.LogisticRegression(penalty='l2', C=1.0)
 	###################  Train logreg
+	print "Training model"
 	logreg.fit(X_train,Y_train)
 	###################  Test logreg
-	Y_score=logreg.predict_proba(X_test)
+	print "Testing model"
+	Y_score=logreg.predict_proba(X_test)[:,1]
 
 	##################  Compute AUC
+	print "Computing AUC"
 	auc_test=roc_auc_score(Y_test, Y_score)
 
 	return auc_test
 
 def normalize_features(X):
     X_trainA_means=sum(X)/np.shape(X)[0]
-    X_trainA_stdev=n_feat*(np.amax(X,axis=0)-np.amin(X,axis=0))
+    X_trainA_stdev=np.amax(X,axis=0)-np.amin(X,axis=0)
     X_trainA_stdev[X_trainA_stdev==0]=1
-    X_norm=(self.XtrainA-X_trainA_means)/X_trainA_stdev
+    X_norm=(X-X_trainA_means)/X_trainA_stdev
     return X_norm 
 
 

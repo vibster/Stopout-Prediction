@@ -15,8 +15,8 @@ from preprocess_data import *
 import flatten_featureset
 from statistical_feat import *
 from logreg_transfer import *
-from multiTaskParam_learning import *
-from importanceSampling import *
+# from multiTaskParam_learning import *
+# from importanceSampling import *
 
 from sklearn import linear_model, cross_validation,svm
 from sklearn.metrics import roc_curve, auc

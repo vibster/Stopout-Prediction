@@ -44,37 +44,42 @@ def extract_features_from_sql(conn,
 
 
     ###########################  EXTRACT FEATURES ##########################
-    lock.acquire()
+    # lock.acquire()
+    if os.path.isfile("features"+course_name+".p"):  # Load saved features
+        data=pck.load( open( "features"+course_name+".p", "rb" ) )
+    else: # Query and load Features
+        get_features = '''
+        SELECT user_id,
+                longitudinal_feature_week,
+                longitudinal_feature_id,
+                longitudinal_feature_value
+        FROM
+        `%s`.user_longitudinal_feature_values
+        WHERE
+        longitudinal_feature_id in (%s)
+        AND
+        longitudinal_feature_week in (%s)
+        ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
+        ASC
+        ''' % (course_name,
+               # earliest_date,
+               # latest_date,
+               utils.convert_list_to_str(list(feature_ids)),
+               utils.convert_list_to_str(list(all_weeks)))
 
-    get_features = '''
-    SELECT user_id,
-            longitudinal_feature_week,
-            longitudinal_feature_id,
-            longitudinal_feature_value
-    FROM
-    `%s`.user_longitudinal_feature_values
-    WHERE
-    longitudinal_feature_id in (%s)
-    AND
-    longitudinal_feature_week in (%s)
-    ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
-    ASC
-    ''' % (course_name,
-           # earliest_date,
-           # latest_date,
-           utils.convert_list_to_str(list(feature_ids)),
-           utils.convert_list_to_str(list(all_weeks)))
 
+        print "Extracting features"
+        cursor = conn.cursor()
+        cursor.execute(get_features)
+        data = np.array(cursor.fetchall())
+        cursor.close()
+        print "Extraction done"
 
+        # Save features once for all
+        pck.dump(data,open( "features"+course_name+".p", "wb" ) )
+    # lock.release()
 
-    cursor = conn.cursor()
-    cursor.execute(get_features)
-    data = np.array(cursor.fetchall())
-    cursor.close()
-
-    lock.release()
-
-    lock.acquire()
+    # lock.acquire()
     ###########################  EXTRACT NUMBER OF STUDENTS ##########################
     if os.path.isfile("num_students_"+course_name+".p"):
         num_students=pck.load( open( "num_students_"+course_name+".p", "rb" ) )
@@ -91,7 +96,7 @@ def extract_features_from_sql(conn,
         num_students = int(cursor.fetchone()[0])
         # Save features once for all
         pck.dump(num_students,open( "num_students_"+course_name+".p", "wb" ) )
-    lock.release()
+    # lock.release()
 
 
     num_features = len(feature_ids)
@@ -167,7 +172,8 @@ def extract_features_from_sql(conn,
 
 
     #put this above end_train to export features to csv
-    export_features(features, course_name,predict_w, range_feat_w, feature_ids, len(active_weeks))
+    if mode=='Train':
+        export_features(features, course_name,predict_w, range_feat_w, feature_ids, len(active_weeks))
 
     end_train=int(threshold*np.shape(features)[0]/len(active_weeks))*len(active_weeks)
 
@@ -179,7 +185,7 @@ def extract_features_from_sql(conn,
 
 
 def export_features(features, course_name,predict_w, range_feat_w, feature_ids, num_weeks):
-    with open(course_name+'_'+predict_w+'_'+max(range_feat_w)+'.csv', "wb") as out_csv:#file format is [label list_of_features ]
+    with open(course_name+'_'+str(predict_w)+'_'+str(max(range_feat_w))+'.csv', "wb") as out_csv:#file format is [label list_of_features ]
         csv_writer = csv.writer(out_csv, delimiter= ',')
         for row in features:
             csv_writer.writerow(row)
