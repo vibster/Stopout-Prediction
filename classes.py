@@ -27,7 +27,7 @@ import utils
 
 class Course:
     def __init__(self,name, earliest_date, latest_date, features, weeks,
-            threshold, db_conn):
+            threshold, db_conn,lock=None):
         self.name=name
         #self.file='prediction/data/'+name+'.csv'
         #self.processed_file='prediction/data/'+name+'_processed.csv'
@@ -44,6 +44,7 @@ class Course:
         self.latest_date = latest_date
         self.threshold = threshold
         self.conn = db_conn
+        self.lock = lock
 
     #def processed(self):
         #if os.path.exists(self.processed_file)==False:
@@ -81,7 +82,8 @@ class Course:
                                                                   self.weeks,
                                                                   lead,
                                                                   lag,
-                                                                  mode='Train')
+                                                                  mode='Train',
+                                                                  lock = self.lock)
         self.X_train = train_data[:,1:]
         self.Y_train = train_data[:,0]
         #if os.path.exists(self.train_file):
@@ -104,7 +106,8 @@ class Course:
                                                                   self.weeks,
                                                                   cur_week,
                                                                   hist_len,
-                                                                  mode='FM_train')
+                                                                  mode='FM_train',
+                                                                  lock=self.lock)
         self.X_train = train_data[:,1:]
         self.Y_train = train_data[:,0]
         #if os.path.exists(self.train_file):
@@ -130,7 +133,8 @@ class Course:
                                                                   self.weeks,
                                                                   lead,
                                                                   lag,
-                                                                  mode='Test')
+                                                                  mode='Test',
+                                                                  lock=self.lock)
         self.X_train = test_data[:,1:]
         self.Y_train = test_data[:,0]
         #if os.path.exists(self.test_file):
@@ -153,7 +157,8 @@ class Course:
                                                                   self.weeks,
                                                                   cur_week,
                                                                   hist_len,
-                                                                  mode='FM_test')
+                                                                  mode='FM_test',
+                                                                  lock=self.lock)
         self.X_train = test_data[:,1:]
         self.Y_train = test_data[:,0]
         #if os.path.exists(self.test_file):
@@ -174,7 +179,7 @@ class Course:
 ##########################################################################################################################################
 
 class PredictionModel:
-    def __init__(self):
+    def __init__(self,lock=None):
         self.train_course=''
         self.test_course=''
         self.lead=''
@@ -186,10 +191,11 @@ class PredictionModel:
         self.penal=1
         self.logreg=linear_model.LogisticRegression('l2',dual=False,C=self.penal)
         self.svm=svm.SVC(C=self.penal)
+        self.lock = lock
 
     def flattenAndLoad_train(self,train_course,lead,lag):
         self.train_course=train_course
-        train_course.flattenAndLoad_traindata(lead,lag)
+        train_course.flattenAndLoad_traindata(lead,lag,lock=self.lock)
         self.X_train=train_course.X_train
         self.Y_train=train_course.Y_train
         self.lead=lead
@@ -197,7 +203,7 @@ class PredictionModel:
 
     def flattenAndLoad_test(self,test_course,lead,lag):
         self.test_course=test_course
-        test_course.flattenAndLoad_testdata(lead,lag)
+        test_course.flattenAndLoad_testdata(lead,lag,lock=self.lock)
         self.X_test=test_course.X_test
         self.Y_test=test_course.Y_test
 
@@ -273,8 +279,8 @@ class PredictionModel:
             for j in range(0,w-1):
                 lead=w-j
                 lag=j+1
-                self.flattenAndLoad_train(train_course,lead,lag)
-                self.flattenAndLoad_test(test_course,lead,lag)
+                self.flattenAndLoad_train(train_course,lead,lag,lock=self.lock)
+                self.flattenAndLoad_test(test_course,lead,lag,lock=self.lock)
                 self.normalize_features()
                 self.LogReg_train()
                 auc_test=self.LogReg_test()

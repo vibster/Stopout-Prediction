@@ -27,7 +27,8 @@ def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,p
 	return t
 
 
-def logreg(course_train,course_test,pred_week,range_feat_w):
+#TODO: need lock for everything
+def logreg(course_train,course_test,lag,lead, lock=None):
 
 	#################### Extract features for train course
 	course_train.flattenAndLoad_traindata(lead,lag)
@@ -60,7 +61,7 @@ def normalize_features(X):
     X_trainA_stdev=n_feat*(np.amax(X,axis=0)-np.amin(X,axis=0))
     X_trainA_stdev[X_trainA_stdev==0]=1
     X_norm=(self.XtrainA-X_trainA_means)/X_trainA_stdev
-    return X_norm 
+    return X_norm
 
 
 
