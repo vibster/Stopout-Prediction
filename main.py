@@ -92,6 +92,7 @@ def parallelize():
 
 def runSpecificLag(course_db_name, features_to_skip, lag, passwd):#course_db_name, features_to_skip, lag):
     for lead in xrange(lag+1, 14):
+        print "running %s with lag %s and lead %s" % (course_db_name, lag, lead)
         main(dbName = course_db_name,
                 features_to_skip = features_to_skip,
                 earliest_date='2015-08-01T00:00:00',
@@ -106,14 +107,17 @@ def runAllProblemsPerCourse(course_db_name, features_to_skip):
     passwd = getpass.getpass()
     funclist = []
     for lag in xrange(13):
+        print "running %s with lag %s" % (course_db_name, lag)
         f = pool.apply_async(runSpecificLag, [course_db_name, features_to_skip, lag, passwd])
         funclist.append(f)
-    [f.get() for f in funclist]
-
+    for f in funclist:
+        f.get()
+        print "finished %s with lag %s" % (course_db_name, lag)
 
 if __name__ == "__main__":
-    runAllProblemsPerCourse('3091x_2012_fall',
-                features_to_skip = [3,4,5,14,103,104,105,201,204,205,206,207,301]) #without collab
-                #features_to_skip = [4, 14, 104,105, 17,201,204,205,206,207,302]) #with collab
+    #already running: 3091x_2012_fall (without collab)
+    runAllProblemsPerCourse('6002x_fall_2012',
+                #features_to_skip = [3,4,5,14,103,104,105,201,204,205,206,207,301]) #without collab
+                features_to_skip = [4, 14, 104,105, 17,201,204,205,206,207,302]) #with collab
 
     #run everything except 3091 2013 spring
