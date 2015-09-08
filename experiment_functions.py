@@ -44,7 +44,7 @@ def logreg(course_train,course_test,pred_week,range_feat_w):
 	X_test=normalize_features(X_test)
 
 	#################### Initialize logreg
-	logreg=(penalty='l2', C=1.0)
+	logreg=LogisticRegression(penalty='l2', C=1.0)
 	###################  Train logreg
 	logreg.fit(X_train,Y_train)
 	###################  Test logreg
