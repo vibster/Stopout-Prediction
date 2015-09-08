@@ -34,7 +34,7 @@ def extract_features_from_sql(conn,
                               mode, #modes are 'Train',Test','FM_train', 'FM_test'
                               fm_lead = 3):  # only matters for FM and FM_test
 
-    
+
     print "Features to be extracted=%s" %(feature_ids)
 
     #date_of_extraction >= '%s'
@@ -44,6 +44,7 @@ def extract_features_from_sql(conn,
 
 
     ###########################  EXTRACT FEATURES ##########################
+    lock.acquire()
     if os.path.isfile("features"+course_name+".p"):  # Load saved features
         data=pck.load( open( "features"+course_name+".p", "rb" ) )
     else: # Query and load Features
@@ -54,7 +55,7 @@ def extract_features_from_sql(conn,
                 longitudinal_feature_value
         FROM
         `%s`.user_longitudinal_feature_values
-        WHERE 
+        WHERE
         longitudinal_feature_id in (%s)
         AND
         longitudinal_feature_week in (%s)
@@ -75,8 +76,9 @@ def extract_features_from_sql(conn,
 
         # Save features once for all
         pck.dump(data,open( "features"+course_name+".p", "wb" ) )
+    lock.release()
 
-
+    lock.acquire()
     ###########################  EXTRACT NUMBER OF STUDENTS ##########################
     if os.path.isfile("num_students_"+course_name+".p"):
         num_students=pck.load( open( "num_students_"+course_name+".p", "rb" ) )
@@ -93,6 +95,7 @@ def extract_features_from_sql(conn,
         num_students = int(cursor.fetchone()[0])
         # Save features once for all
         pck.dump(num_students,open( "num_students_"+course_name+".p", "wb" ) )
+    lock.release()
 
 
     num_features = len(feature_ids)
