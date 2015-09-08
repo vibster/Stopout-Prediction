@@ -64,24 +64,30 @@ def run_dropout_prediction(userName,
             testing_course_threshold, conn)
 
     ############## Set parameters #################################################################
-    n_A=2000 # Number of samples from source domain (course)
-    n_B_known=0.6 # Percentage of sample used from target domain available
-    n_B_unknown=0.4  # Percentage of sample used from target domain available
-    is_FM=False
-    seed=1 # set up the randomization seed
+    # n_A=2000 # Number of samples from source domain (course)
+    # n_B_known=0.6 # Percentage of sample used from target domain available
+    # n_B_unknown=0.4  # Percentage of sample used from target domain available
+    # is_FM=False
+    # seed=1 # set up the randomization seed
 
-    ############# Initialize model #################################################################
-    model=initialize_model(a,b,n_A,n_B_known,n_B_unknown,pred_week,feat_week,seed,is_FM)
-    model.normalize_features_independently()
+    # ############# Initialize model #################################################################
+    # model=initialize_model(a,b,n_A,n_B_known,n_B_unknown,pred_week,feat_week,seed,is_FM)
+    # model.normalize_features_independently()
 
 
 
-    ############# Test model performance ###########################################################
-    auc_test=AUC_naive(model,lamb,epsilon)
-    auc_train = AUC_train(model,lamb, epsilon)
+    # ############# Test model performance ###########################################################
+    # auc_test=AUC_naive(model,lamb,epsilon)
+    # auc_train = AUC_train(model,lamb, epsilon)
+
+
+    ############### Run sklearn logreg
+
+    auc_test=logreg(a,b,pred_week,range_feat_w)
+    auc_train=0 #"default"
 
     conn.close()
-    return (auc_test,auc_train,model.weight)
+    return (auc_test,auc_train,1)
 
 
 

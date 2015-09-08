@@ -4,6 +4,8 @@ Run experiments
 import numpy as np
 from classes import *
 from utils import *
+from sklearn import linear_model
+from sklearn.metrics import roc_curve, auc
 
 def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,param1,param2,seed,is_FM):
 	t=LogReg_withLearnedPrior()
@@ -23,6 +25,54 @@ def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,p
 	print "Number1 of training example taskB known",np.shape(t.XtrainB_known)[0]
 	t.variance_initial_prior=1
 	return t
+
+
+def logreg(course_train,course_test,pred_week,range_feat_w):
+
+	#################### Extract features for train course
+	course_train.flattenAndLoad_traindata(lead,lag)
+	X_train=course_train.X_train
+	Y_train=course_train.Y_train
+
+	#################### Extract features for train course
+	course_train.flattenAndLoad_testdata(lead,lag)
+	X_test=course_test.X_train
+	Y_test=course_test.Y_train
+
+	#################### Normalize features independently
+	X_train=normalize_features(X_train)
+	X_test=normalize_features(X_test)
+
+	#################### Initialize logreg
+	logreg=(penalty='l2', C=1.0)
+	###################  Train logreg
+	logreg.fit(X_train,Y_train)
+	###################  Test logreg
+	Y_score=logreg.predict_proba(X_test)
+
+	##################  Compute AUC
+	auc_test=roc_auc_score(Y_test, Y_score)
+
+	return auc_test
+
+def normalize_features(X):
+    X_trainA_means=sum(X)/np.shape(X)[0]
+    X_trainA_stdev=n_feat*(np.amax(X,axis=0)-np.amin(X,axis=0))
+    X_trainA_stdev[X_trainA_stdev==0]=1
+    X_norm=(self.XtrainA-X_trainA_means)/X_trainA_stdev
+    return X_norm 
+
+
+
+
+
+
+
+
+
+
+
+
 
 def AUC_prior(t,coef_trans): # Seems to work
 	date=time.time()

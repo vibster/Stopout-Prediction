@@ -45,37 +45,33 @@ def extract_features_from_sql(conn,
 
     ###########################  EXTRACT FEATURES ##########################
     lock.acquire()
-    if os.path.isfile("features"+course_name+".p"):  # Load saved features
-        data=pck.load( open( "features"+course_name+".p", "rb" ) )
-    else: # Query and load Features
-        get_features = '''
-        SELECT user_id,
-                longitudinal_feature_week,
-                longitudinal_feature_id,
-                longitudinal_feature_value
-        FROM
-        `%s`.user_longitudinal_feature_values
-        WHERE
-        longitudinal_feature_id in (%s)
-        AND
-        longitudinal_feature_week in (%s)
-        ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
-        ASC
-        ''' % (course_name,
-               # earliest_date,
-               # latest_date,
-               utils.convert_list_to_str(list(feature_ids)),
-               utils.convert_list_to_str(list(all_weeks)))
+
+    get_features = '''
+    SELECT user_id,
+            longitudinal_feature_week,
+            longitudinal_feature_id,
+            longitudinal_feature_value
+    FROM
+    `%s`.user_longitudinal_feature_values
+    WHERE
+    longitudinal_feature_id in (%s)
+    AND
+    longitudinal_feature_week in (%s)
+    ORDER BY user_id, longitudinal_feature_week, longitudinal_feature_id, longitudinal_feature_value
+    ASC
+    ''' % (course_name,
+           # earliest_date,
+           # latest_date,
+           utils.convert_list_to_str(list(feature_ids)),
+           utils.convert_list_to_str(list(all_weeks)))
 
 
 
-        cursor = conn.cursor()
-        cursor.execute(get_features)
-        data = np.array(cursor.fetchall())
-        cursor.close()
+    cursor = conn.cursor()
+    cursor.execute(get_features)
+    data = np.array(cursor.fetchall())
+    cursor.close()
 
-        # Save features once for all
-        pck.dump(data,open( "features"+course_name+".p", "wb" ) )
     lock.release()
 
     lock.acquire()
