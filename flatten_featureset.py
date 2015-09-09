@@ -32,7 +32,8 @@ def extract_features_from_sql(conn,
                               predict_w, #for FM_test this is cur_week
                               range_feat_w, #for FM and FM_test this is hist_len
                               mode, #modes are 'Train',Test','FM_train', 'FM_test'
-                              fm_lead = 3):  # only matters for FM and FM_test
+                              fm_lead = 3,# only matters for FM and FM_test
+                              lock=None):
 
 
     print "Features to be extracted=%s" %(feature_ids)
@@ -44,10 +45,14 @@ def extract_features_from_sql(conn,
 
 
     ###########################  EXTRACT FEATURES ##########################
-    # lock.acquire()
+    if lock:
+        lock.acquire()
+        print os.getpid(), "acquire first lock"
+
     if os.path.isfile("features"+course_name+".p"):  # Load saved features
         data=pck.load( open( "features"+course_name+".p", "rb" ) )
     else: # Query and load Features
+
         get_features = '''
         SELECT user_id,
                 longitudinal_feature_week,
@@ -69,17 +74,25 @@ def extract_features_from_sql(conn,
 
 
         print "Extracting features"
+
         cursor = conn.cursor()
         cursor.execute(get_features)
         data = np.array(cursor.fetchall())
         cursor.close()
+
         print "Extraction done"
 
         # Save features once for all
         pck.dump(data,open( "features"+course_name+".p", "wb" ) )
-    # lock.release()
 
-    # lock.acquire()
+    if lock:
+        lock.release()
+        print os.getpid(), "released first lock"
+
+    if lock:
+        lock.acquire()
+        print os.getpid(), "acquired second lock"
+
     ###########################  EXTRACT NUMBER OF STUDENTS ##########################
     if os.path.isfile("num_students_"+course_name+".p"):
         num_students=pck.load( open( "num_students_"+course_name+".p", "rb" ) )
@@ -96,7 +109,10 @@ def extract_features_from_sql(conn,
         num_students = int(cursor.fetchone()[0])
         # Save features once for all
         pck.dump(num_students,open( "num_students_"+course_name+".p", "wb" ) )
-    # lock.release()
+
+    if lock:
+        lock.release()
+        print os.getpid(), "released second lock"
 
 
     num_features = len(feature_ids)

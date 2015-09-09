@@ -67,17 +67,20 @@ def main(dbName=None, userName=None, passwd=None, dbHost=None,
                                                         pred_week,
                                                         feat_week,
                                                         epsilon,
-                                                        lamb=lamb)
+                                                        lamb=lamb,
+                                                        lock=lock)
     print "done"
 
-    lock.acquire()
+    if lock:
+        lock.acquire()
     #save experiment and model
     print "Saving run"
     exp_id = record.record_experiment(dbName, userName, passwd, dbHost, dbPort, pred_week, feat_week,
            auc_train, testing_course, auc_test, lamb, epsilon, latest_date)
 
     record.record_model(dbName, userName, passwd, dbHost, dbPort, features, weights, exp_id)
-    lock.release()
+    if lock:
+        lock.release()
     print "done"
 
 def initLock(l):
@@ -92,6 +95,7 @@ def parallelize():
 
 def runSpecificLag(course_db_name, features_to_skip, lag, passwd):#course_db_name, features_to_skip, lag):
     for lead in xrange(lag+1, 14):
+        print "running %s with lag %s and lead %s" % (course_db_name, lag, lead)
         main(dbName = course_db_name,
                 features_to_skip = features_to_skip,
                 earliest_date='2015-08-01T00:00:00',
@@ -100,20 +104,33 @@ def runSpecificLag(course_db_name, features_to_skip, lag, passwd):#course_db_nam
                 pred_week = lead,
                 feat_week = lag,
                 passwd = passwd)
+        return
 
 def runAllProblemsPerCourse(course_db_name, features_to_skip):
-    pool, ncores = parallelize()
     passwd = getpass.getpass()
+    global lock
+    lock = None
+    runSpecificLag(course_db_name, features_to_skip, 0, passwd)
+    sys.exit()
+
+    pool, ncores = parallelize()
     funclist = []
     for lag in xrange(13):
+        print "running %s with lag %s" % (course_db_name, lag)
         f = pool.apply_async(runSpecificLag, [course_db_name, features_to_skip, lag, passwd])
         funclist.append(f)
-    [f.get() for f in funclist]
-
+    for f in funclist:
+        f.get()
+        print "finished %s with lag %s" % (course_db_name, lag)
 
 if __name__ == "__main__":
+    #3091x_2012_fall (without collab)
+    #6002x_fall_2012 (with collab)
+    #1473x_2013_spring (without collab)
+    #201x_2013_spring (with collab)
+    #6002x_spring_2013 (with collab)
     runAllProblemsPerCourse('3091x_2012_fall',
                 features_to_skip = [3,4,5,14,103,104,105,201,204,205,206,207,301]) #without collab
                 #features_to_skip = [4, 14, 104,105, 17,201,204,205,206,207,302]) #with collab
 
-    #run everything except 3091 2013 spring
+    #run everything except 3091x_2013_spring
