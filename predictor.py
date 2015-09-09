@@ -52,17 +52,18 @@ def run_dropout_prediction(userName,
                            pred_week,
                            feat_week,
                            epsilon,
-                           lamb=1):
+                           lamb=1,
+                           lock = None):
     conn = sql.openSQLConnectionP(trainingCourse, userName, passwd, host, port)
 
     ############## Download course data and split into train and test sets  ######################
     training_course_threshold = 0.6
     a=Course(trainingCourse, earliest_date, latest_date, features, weeks,
-            training_course_threshold, conn)
+            training_course_threshold, conn, lock=lock)
 
     testing_course_threshold = 0.6
     b=Course(testingCourse,  earliest_date, latest_date, features, weeks,
-            testing_course_threshold, conn)
+            testing_course_threshold, conn,lock=lock)
 
     ############## Set parameters #################################################################
     # n_A=2000 # Number of samples from source domain (course)
@@ -84,7 +85,7 @@ def run_dropout_prediction(userName,
 
     ############### Run sklearn logreg
 
-    auc_test=logreg(a,b,pred_week,feat_week)
+    auc_test=logreg(a,b,range(feat_week+1), pred_week,lock=lock)
     auc_train=0 #"default"
 
     conn.close()
