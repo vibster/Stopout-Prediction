@@ -27,7 +27,8 @@ def initialize_model(course_taskA,course_taskB,n_A,perc_B_known,perc_B_unknown,p
 	return t
 
 
-def logreg(course_train,course_test,pred_week,range_feat_w):
+#TODO: need lock for everything
+def logreg(course_train,course_test,lag,lead, lock=None):
 
 	#################### Extract features for train course
 	print "Extracting features for train course"
@@ -59,7 +60,7 @@ def logreg(course_train,course_test,pred_week,range_feat_w):
 	print "Computing AUC"
 	auc_test=roc_auc_score(Y_test, Y_score)
 
-	return auc_test
+	return auc_test[0]
 
 def normalize_features(X):
     X_trainA_means=sum(X)/np.shape(X)[0]
